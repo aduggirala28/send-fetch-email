@@ -1,4 +1,4 @@
-##SMTP, POP and IMAP send/fetch email using Python
+# SMTP, POP and IMAP send/fetch email using Python
 
 Python script to send email using SMTP and fetch the latest email in the inbox using POP3 and IMAP4. 
 Script contains smtp, pop and imap servers for Yahoo and Gmail mail, alternatively user will be prompted to in those respective server names in case of other domains.
