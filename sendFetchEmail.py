@@ -7,8 +7,6 @@ import email
 import imaplib
 
 
-# set global parameters for the mail servers
-
 def fetchEmailPop(email_id, passwd):
     mailbox = poplib.POP3_SSL(pop_server, '995')
     mailbox.set_debuglevel(True)
@@ -16,7 +14,6 @@ def fetchEmailPop(email_id, passwd):
     mailbox.pass_(passwd)
     num = len(mailbox.list()[1])
     print("********** FETCHING THE LATEST MESSAGE FROM THE INBOX USING POP ********** \n %s" % (mailbox.retr(num)[1]))
-    # TODO add message parsing here ; have a pretty display
     mailbox.quit()
 
 
@@ -27,8 +24,10 @@ def fetchEmailImap(email_id, passwd):
     mailbox.select()
     typ, num = mailbox.search(None, 'ALL')
     typ, data = mailbox.fetch(num[0].split()[len(num) - 1], '(RFC822)')
-    # print(type(data[0][1]))
-    print('********* FETCHING THE LATEST MESSAGE FROM THE INBOX USING POP ********** \n %s\n' % (data[0][1]))
+    #2nd argument of fetch message parts can be RFC822 or BODY[]; look up legend in README.
+    print('********* FETCHING THE LATEST MESSAGE FROM THE INBOX USING IMAP ********** \n %s\n' % (data[0][1]))
+    mailbox.close()
+    mailbox.logout()
 
 def sendEmail(email_id, passwd):
     print("Trying to send email  now")
@@ -40,10 +39,6 @@ def sendEmail(email_id, passwd):
     msg['Subject'] = "Just Python saying Hi! "
     server.send_message(msg, email_id, email_id)
     server.quit()
-
-def parse_emailStream():
-    #TODO parse email stream from gibberish to headers, from, to, subject and body
-    return
 
 if __name__ == "__main__":
     print("Python Script to send/fetch email.")
