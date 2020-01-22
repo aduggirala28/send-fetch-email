@@ -6,6 +6,12 @@ import poplib
 import email
 import imaplib
 
+
+def print_fetch(extra_log, from_email, to_email, protocol, message):
+    print("**********%s FETCHING THE LATEST MESSAGE FROM USER %s IN THE INBOX %s USING %s ********** \n %s" % (
+        extra_log, from_email, to_email, protocol, message))
+
+
 def fetchEmailPop():
     print("********** BEGIN POP **********")
     mailbox = poplib.POP3_SSL(pop_server, '995')
@@ -13,39 +19,38 @@ def fetchEmailPop():
     mailbox.user(email_id_to)
     mailbox.pass_(passwd_to)
     num_list = mailbox.list()
-    found=False
+    found = False
     if num_list[1]:
-        for each_msg in range(len(num_list[1]),0,-1):
+        for each_msg in range(len(num_list[1]), 0, -1):
             msg_list = mailbox.retr(each_msg)[1]
             for each_header in msg_list:
                 if re.search("From:\s*.*@.*\.com", each_header.decode("utf-8")):
-                    if re.search(".*"+email_id_from+".*", each_header.decode("utf-8")):
-                        print( "********** FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING POP ********** \n %s" %(email_id_from,msg_list))
+                    if re.search(".*" + email_id_from + ".*", each_header.decode("utf-8")):
+                        print_fetch("", email_id_from, email_id_to, "POP", msg_list)
                         found = True
                     break
             if found:
                 break
     else:
-        print("********* TRYING TO FETCH EMAIL USING POP BUT NO EMAIL FOUND FROM %s IN INBOX %s  ********** "%(email_id_from,email_id_to))
+        print_fetch("ERROR! NO EMAIL FOUND WHILE", email_id_from, email_id_to, "POP", "")
     mailbox.quit()
 
 
 def fetchEmailImap():
     print("********** BEGIN IMAP **********")
     mailbox = imaplib.IMAP4_SSL(imap_server, 993)
-    mailbox.debug
+    mailbox.debug = 1
     mailbox.login(email_id_to, passwd_to)
     mailbox.select("Inbox")
     typ, num = mailbox.search(None, '(FROM "%s")' % email_id_from)
-    msg_list=num[0].split()
+    msg_list = num[0].split()
     if num is not None and msg_list:
-        typ, data = mailbox.fetch(msg_list[len(msg_list)-1], '(RFC822)')
+        typ, data = mailbox.fetch(msg_list[len(msg_list) - 1], '(RFC822)')
         # 2nd argument of fetch message parts can be RFC822 or BODY[]; look up legend in README.
-        print('********* FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING IMAP ********** \n %s\n' % (
-            email_id_from, data[0][1]))
+        print_fetch("", email_id_from, email_id_to, "IMAP", data[0][1])
+
     else:
-        print("********* TRYING TO FETCH EMAIL USING IMAP BUT NO EMAIL WITH SEARCH CRITERIA \"FROM %s \" FOUND IN INBOX %s **********" %(email_id_from, email_id_to)
-              )
+        print_fetch("ERROR! NO EMAIL FOUND WHILE", email_id_from, email_id_to, "IMAP", "")
     mailbox.close()
     mailbox.logout()
 
