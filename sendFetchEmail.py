@@ -12,8 +12,21 @@ def fetchEmailPop():
     mailbox.set_debuglevel(True)
     mailbox.user(email_id_to)
     mailbox.pass_(passwd_to)
-    num = len(mailbox.list()[1])
-    print("********** FETCHING THE LATEST MESSAGE FROM THE INBOX USING POP ********** \n %s" % (mailbox.retr(num)[1]))
+    num_list = mailbox.list()
+    found=False
+    if num_list[1]:
+        for each_msg in range(len(num_list[1]),0,-1):
+            msg_list = mailbox.retr(each_msg)[1]
+            for each_header in msg_list:
+                if re.search("From:\s*.*@.*\.com", each_header.decode("utf-8")):
+                    if re.search(".*"+email_id_from+".*", each_header.decode("utf-8")):
+                        print( "********** FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING POP ********** \n %s" %(email_id_from,msg_list))
+                        found = True
+                    break
+            if found:
+                break
+    else:
+        print("********* TRYING TO FETCH EMAIL USING POP BUT NO EMAIL FOUND FROM %s IN INBOX %s  ********** "%(email_id_from,email_id_to))
     mailbox.quit()
 
 
@@ -22,10 +35,15 @@ def fetchEmailImap():
     mailbox.debug
     mailbox.login(email_id_to, passwd_to)
     mailbox.select()
-    typ, num = mailbox.search(None, '(FROM "%s")' %(email_id_from))
-    typ, data = mailbox.fetch(num[0].split()[len(num) - 1], '(RFC822)')
-    # 2nd argument of fetch message parts can be RFC822 or BODY[]; look up legend in README.
-    print('********* FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING IMAP ********** \n %s\n' % (email_id_from, data[0][1]))
+    typ, num = mailbox.search(None, '(FROM "%s")' % email_id_from)
+    if num is not None and num[0].split():
+        typ, data = mailbox.fetch(num[0].split()[len(num) - 1], '(RFC822)')
+        # 2nd argument of fetch message parts can be RFC822 or BODY[]; look up legend in README.
+        print('********* FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING IMAP ********** \n %s\n' % (
+            email_id_from, data[0][1]))
+    else:
+        print("********* TRYING TO FETCH EMAIL USING IMAP BUT NO EMAIL WITH SEARCH CRITERIA \"FROM %s \" FOUND IN INBOX %s **********" %(email_id_from, email_id_to)
+              )
     mailbox.close()
     mailbox.logout()
 
@@ -36,8 +54,8 @@ def sendEmail():
     server.set_debuglevel(True)
     server.login(email_id_from, passwd_from)
     msg = email.message.EmailMessage()
-    msg.set_payload("Hi there from Python")
-    msg['Subject'] = "Just Python saying Hi! "
+    msg.set_payload("Hi there!!! from Python")
+    msg['Subject'] = "Just Python saying Hi! :) :)"
     server.send_message(msg, email_id_from, email_id_to)
     server.quit()
 
