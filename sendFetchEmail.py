@@ -6,8 +6,8 @@ import poplib
 import email
 import imaplib
 
-
 def fetchEmailPop():
+    print("********** BEGIN POP **********")
     mailbox = poplib.POP3_SSL(pop_server, '995')
     mailbox.set_debuglevel(True)
     mailbox.user(email_id_to)
@@ -31,13 +31,15 @@ def fetchEmailPop():
 
 
 def fetchEmailImap():
+    print("********** BEGIN IMAP **********")
     mailbox = imaplib.IMAP4_SSL(imap_server, 993)
     mailbox.debug
     mailbox.login(email_id_to, passwd_to)
-    mailbox.select()
+    mailbox.select("Inbox")
     typ, num = mailbox.search(None, '(FROM "%s")' % email_id_from)
-    if num is not None and num[0].split():
-        typ, data = mailbox.fetch(num[0].split()[len(num) - 1], '(RFC822)')
+    msg_list=num[0].split()
+    if num is not None and msg_list:
+        typ, data = mailbox.fetch(msg_list[len(msg_list)-1], '(RFC822)')
         # 2nd argument of fetch message parts can be RFC822 or BODY[]; look up legend in README.
         print('********* FETCHING THE LATEST MESSAGE FROM USER %s THE INBOX USING IMAP ********** \n %s\n' % (
             email_id_from, data[0][1]))
@@ -49,7 +51,7 @@ def fetchEmailImap():
 
 
 def sendEmail():
-    print("********* SENDING EMAIL FROM USER %s to USER %s ********** \n" % (email_id_from, email_id_to))
+    print("********* BEGIN SMTP - SENDING EMAIL FROM USER %s to USER %s ********** \n" % (email_id_from, email_id_to))
     server = smtplib.SMTP_SSL(smtp_server, 465)
     server.set_debuglevel(True)
     server.login(email_id_from, passwd_from)
