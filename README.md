@@ -5,11 +5,14 @@ Script contains smtp, pop and imap servers for Yahoo and Gmail mail, alternative
 
 For yahoo, generate a one time password from account settings of your yahoo email account (account info --> Privacy --> generate one time password), instead of the regular password used from the web-UI.
 
-For gmail, less secure app access has to be allowed for email to go through from this script.
+For gmail, you can either generate one time app password using these instructions here https://support.google.com/accounts/answer/185833?hl=en or alternatively "less secure app access" has to be allowed for email to go through from this script.
 https://myaccount.google.com/lesssecureapps
 
-For IMAP, the fetch command takes message parts as the string argument which can be looked up from here 
-https://tools.ietf.org/html/rfc3501 -- IMAP 
+For IMAP, the search command takes the sender's email id as parameter and for filtering and the fetch command takes message parts as the string argument which can be looked up from here 
+Doc for IMAP - https://tools.ietf.org/html/rfc3501 
+
+For POP, the script iterates through the inbox messages and searches for latest message from the sender's email id, by doing a regex search on the 'From' header.
 
 Doc for POP - https://tools.ietf.org/html/rfc1939
+
 Doc for SMTP - https://tools.ietf.org/html/rfc821
