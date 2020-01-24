@@ -1,10 +1,13 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 from getpass import getpass
 import smtplib
 import re
 import poplib
 import email
 import imaplib
+
+POP_SECURE_PORT = 995
+IMAP_SECURE_PORT = 993
 
 
 def print_fetch(extra_log, from_email, to_email, protocol, message):
@@ -14,8 +17,8 @@ def print_fetch(extra_log, from_email, to_email, protocol, message):
 
 def fetchEmailPop():
     print("********** BEGIN POP **********")
-    mailbox = poplib.POP3_SSL(pop_server, '995')
-    mailbox.set_debuglevel(True)
+    mailbox = poplib.POP3_SSL(pop_server, POP_SECURE_PORT)
+    #mailbox.set_debuglevel(True)
     mailbox.user(email_id_to)
     mailbox.pass_(passwd_to)
     num_list = mailbox.list()
@@ -38,8 +41,8 @@ def fetchEmailPop():
 
 def fetchEmailImap():
     print("********** BEGIN IMAP **********")
-    mailbox = imaplib.IMAP4_SSL(imap_server, 993)
-    mailbox.debug = 1
+    mailbox = imaplib.IMAP4_SSL(imap_server, IMAP_SECURE_PORT)
+    # mailbox.debug = 1
     mailbox.login(email_id_to, passwd_to)
     mailbox.select("Inbox")
     typ, num = mailbox.search(None, '(FROM "%s")' % email_id_from)
@@ -58,36 +61,37 @@ def fetchEmailImap():
 def sendEmail():
     print("********* BEGIN SMTP - SENDING EMAIL FROM USER %s to USER %s ********** \n" % (email_id_from, email_id_to))
     server = smtplib.SMTP_SSL(smtp_server, 465)
-    server.set_debuglevel(True)
+    # server.set_debuglevel(True)
     server.login(email_id_from, passwd_from)
     msg = email.message.EmailMessage()
     msg.set_payload("Hi there!!! from Python")
     msg['Subject'] = "Just Python saying Hi! :) :)"
     server.send_message(msg, email_id_from, email_id_to)
     server.quit()
+    print('********* SMTP MESSAGE SENT FROM %s TO %s *********\n %s' %(email_id_from, email_id_to, msg.as_string()))
 
 
 if __name__ == "__main__":
     print("Python Script to send/fetch email.")
-    email_id_from = input("Please enter your Email id you would like to send the email from : ")
+    email_id_from = input("Please enter your Email id you would like to send the email FROM : ")
     passwd_from = getpass("Password for %s: " % email_id_from)
-    email_id_to = input("Please enter the Email id you would like to the email to : ")
+    email_id_to = input("Please enter the Email id you would like to send the email TO : ")
     passwd_to = getpass("Password for %s : " % email_id_to)
 
     if re.search('.*yahoo\.com', email_id_from):
         print("Yahoo SMTP server")
         smtp_server = 'smtp.mail.yahoo.com'
-    elif re.search('.*gmail.com', email_id_from):
+    elif re.search('.*gmail.com\s*', email_id_from):
         print("Gmail SMTP server")
         smtp_server = 'smtp.gmail.com'
     else:
         smtp_server = input("The domain is not yahoo/gmail \n Enter the SMTP server for domain: ")
 
-    if re.search('.*yahoo\.com', email_id_to):
+    if re.search('.*yahoo\.com\s*', email_id_to):
         print("Yahoo POP and IMAP server")
         pop_server = 'pop.mail.yahoo.com'
         imap_server = 'imap.mail.yahoo.com'
-    elif re.search('.*gmail.com', email_id_to):
+    elif re.search('.*gmail.com\s*', email_id_to):
         print("Gmail POP and IMAP server")
         pop_server = 'pop.gmail.com'
         imap_server = 'imap.gmail.com'
